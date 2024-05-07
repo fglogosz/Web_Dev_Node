@@ -1,6 +1,8 @@
 const express = require("express");
 const { engine: expressHandlebars } = require("express-handlebars");
 const fortune = require("./lib/fortune");
+const handlers = require("./lib/handlers");
+const weatherMiddleware = require("./lib/middleware/weather");
 
 const app = express();
 
@@ -9,36 +11,36 @@ app.engine(
 	"handlebars",
 	expressHandlebars({
 		defaultLayout: "main",
+		helpers: {
+			section: function (name, options) {
+				if (!this._sections) this._sections = {};
+				this._sections[name] = options.fn(this);
+				return null;
+			},
+		},
 	})
 );
 app.set("view engine", "handlebars");
 
-app.use(express.static(__dirname + "/public"));
-
 const port = process.env.PORT || 3000;
 
-app.get("/", (req, res) => res.render("home"));
+app.use(express.static(__dirname + "/public"));
 
-app.get("/about", (req, res) => {
-	res.render("about", { fortune: fortune.getFortune() });
-});
+app.use(weatherMiddleware);
 
-// custom 404 page
-app.use((req, res) => {
-	res.status(404);
-	res.render("404");
-});
+app.get("/", handlers.home);
+app.get("/section-test", handlers.sectionTest);
 
-// custom 500 page
-app.use((err, req, res, next) => {
-	console.error(err.message);
-	res.status(500);
-	res.render("500");
-});
+app.use(handlers.notFound);
+app.use(handlers.serverError);
 
-app.listen(port, () =>
-	console.log(
-		`Express started on http://localhost:${port}; ` +
-			`press Ctrl-C to terminate.`
-	)
-);
+if (require.main === module) {
+	app.listen(port, () => {
+		console.log(
+			`Express started on http://localhost:${port}` +
+				"; press Ctrl-C to terminate."
+		);
+	});
+} else {
+	module.exports = app;
+}
