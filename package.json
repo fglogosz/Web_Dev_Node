@@ -10,7 +10,8 @@
 	"license": "ISC",
 	"dependencies": {
 		"express": "^4.19.2",
-		"express-handlebars": "^7.1.2"
+		"express-handlebars": "^7.1.2",
+		"multiparty": "^4.2.3"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.2.0",
