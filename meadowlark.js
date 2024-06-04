@@ -3,6 +3,7 @@ const { engine: expressHandlebars } = require("express-handlebars");
 const fortune = require("./lib/fortune");
 const handlers = require("./lib/handlers");
 const weatherMiddleware = require("./lib/middleware/weather");
+const bodyPareser = require("body-parser");
 
 const app = express();
 
@@ -24,12 +25,18 @@ app.set("view engine", "handlebars");
 
 const port = process.env.PORT || 3000;
 
+app.use(bodyPareser.urlencoded({ extended: true }));
+
 app.use(express.static(__dirname + "/public"));
 
 app.use(weatherMiddleware);
 
 app.get("/", handlers.home);
 app.get("/section-test", handlers.sectionTest);
+
+app.get("/newsletter-signup", handlers.newsletterSignup);
+app.post("/newsletter-signup/process", handlers.newsletterSignupProcess);
+app.get("/newsletter-signup/thank-you", handlers.newsletterSignupThankYou);
 
 app.use(handlers.notFound);
 app.use(handlers.serverError);
